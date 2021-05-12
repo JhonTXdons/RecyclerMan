@@ -18,6 +18,7 @@ class App:
         self.WIN_STATE = False
         # -------------------------------------------------------------------------------------------------------------
 
+        # MAIN SCREEN DEFINITION --------------------------------------------------------------------------------------
         self._display_surf = None
         self.clock = pygame.time.Clock()
         self._title_ = None
@@ -61,6 +62,7 @@ class App:
         # Immagine di Menu
         self.mn = pygame.image.load('data/assets/images/home.png')
         self.mn_resized = pygame.transform.scale(self.mn, (1200, 1200))
+        self.mn_resized_HD = pygame.transform.scale(self.mn, (1000, 1000))
 
         # Immagine di Background
         self.bg = pygame.image.load('data/assets/images/sfondo.png').convert()
@@ -77,9 +79,6 @@ class App:
         self.player = pygame.image.load('data/assets/images/omino.png')
         self.L_payer_resized = pygame.transform.scale(self.player, (150, 300))
 
-        self.BinTypeImage = self._bin.get_type()
-        self.BinColor = 'blu'
-
     def on_init(self):
         pygame.init()
         self.PLAY_STATE = True
@@ -94,7 +93,7 @@ class App:
         PlayerPosition = PlayerX, PlayerY, PlayerWeight, PlayerHeight
         return PlayerPosition
 
-    def getScoreLife(self, score, life, pollution):
+    def getScoreLifePollution(self, score, life, pollution):
 
         self.point_text2 = self.font.render(str(score), True, (0, 0, 0))
 
@@ -156,36 +155,31 @@ class App:
 
     # -----------------------------------------------------------------------------------------------------------------
 
-    def on_loop(self):
+    def playerBinLoop(self):
+
         keys = pygame.key.get_pressed()
 
         self._bin.bMov(keys)
-        self._display_surf.blit(self.BinTypeImage, self.getBinStat())
-        # print(self.getBinStat())
+        self._display_surf.blit(self._bin.get_type(), self.getBinStat())
+        self._bin.binChangeColor(keys)
 
         self._p.pMov(keys)
-        # pygame.draw.rect(self._display_surf, (0, 255, 0), self.getPlayerStat(), 1)
         self._display_surf.blit(pygame.transform.flip(self.player, True, False), self.getPlayerStat())
-        # print("player: " + str(self.getPlayerStat()))
 
-    def on_render(self):
+    def trashLoop(self):
 
         for i in range(self.TRASH):
             self._display_surf.blit(self.trash_list[i].get('image'),
                                     (self.trash_list[i].get('x'), self.trash_list[i].get('y')))
 
         self._display_surf.blit(self._t_tube.trash_tube_resized, self.getTubeStat())
-        # pygame.draw.rect(self._display_surf, (255, 255, 0), (330, 0, 240, 200), 3)
         self._display_surf.blit(self._t_tube.trash_tube_resized, (0, 0, 300, 100))
-        # pygame.draw.rect(self._display_surf, (255, 255, 0), (30, 0, 240, 200), 3)
         self._display_surf.blit(self._t_tube.trash_tube_resized, (600, 0, 300, 100))
-        # pygame.draw.rect(self._display_surf, (255, 255, 0), (630, 0, 240, 200), 3)
 
         self._t.updatePosition()
         self.checkCollisionBin()
         self.mode_pollution(self.gm_pollution)
         self._t.chekBorder()
-
 
         # Aumento di velocità in base al punteggio raggiunto ----------------------------------------------------------
         if 500 <= self.POINT < 2500 and self.point_check == 0:
@@ -202,22 +196,21 @@ class App:
     # CONTROLLO COLLISIONI CON IL BIDONE ------------------------------------------------------------------------------
 
     def checkCollisionBin(self):
+
         for i in range(self.TRASH):
-            self.rec1 = self._bin.bin_blue_resized.get_rect()
-            self.rec1.x = self._bin.get_dimX()
-            self.rec1.y = self._bin.get_dimY()
+            rec1 = self._bin.bin_blue_resized.get_rect()
+            rec1.x = self._bin.get_dimX()
+            rec1.y = self._bin.get_dimY()
 
-            self.rec2 = self.trash_list[i].get('image').get_rect()
-            self.rec2.x = self.trash_list[i].get('x')
-            self.rec2.y = self.trash_list[i].get('y')
+            rec2 = self.trash_list[i].get('image').get_rect()
+            rec2.x = self.trash_list[i].get('x')
+            rec2.y = self.trash_list[i].get('y')
 
-            # pygame.draw.rect(self._display_surf, (0, 0, 255), self.rec2, 1)
-            # pygame.draw.rect(self._display_surf, (255, 0, 0), self.rec1, 1)
-
-            if self.rec2.colliderect(self.rec1) and self.VITA != 0:
-                if self.BinColor == self.trash_list[i].get('color'):
+            if rec2.colliderect(rec1) and self.VITA != 0:
+                if self._bin.get_color() == self.trash_list[i].get('color'):
                     self.POINT += 100
                     self.trash_list[i].update({'y': -1500 + random.randint(0, 1000)})
+                    self.trash_list[i].update({'x': self._t_tube.randomTube()})
                     if self.trash_list[i].get('color') == 'blu':
                         self.trash_list[i].update({'image': self._t.randomImageBlue()})
                     elif self.trash_list[i].get('color') == 'grigio':
@@ -229,29 +222,14 @@ class App:
                     print(self.POINT)
                 else:
                     self.VITA -= 1
-                    self.resetAfterLifeLoss()
-                    print(self.VITA)
+                    self._t.resetAfterLifeLoss()
             else:
                 pass
 
     # -----------------------------------------------------------------------------------------------------------------
-    # RESET DELLA Y DEGLI OGGETTI DOPO LA PERDITA DI UNA VITA ---------------------------------------------------------
 
-    def resetAfterLifeLoss(self):
-        for i in range(self.TRASH):
-            self.trash_list[i].update({'y': -1000 + random.randint(0, 1000)})
-            self.trash_list[i].update({'x': self._t_tube.randomTube()})
-            if self.trash_list[i].get('color') == 'blu':
-                self.trash_list[i].update({'image': self._t.randomImageBlue()})
-            elif self.trash_list[i].get('color') == 'grigio':
-                self.trash_list[i].update({'image': self._t.randomImageGray()})
-            elif self.trash_list[i].get('color') == 'verde':
-                self.trash_list[i].update({'image': self._t.randomImageGreen()})
-            elif self.trash_list[i].get('color') == 'giallo':
-                self.trash_list[i].update({'image': self._t.randomImageYellow()})
-
-    # -----------------------------------------------------------------------------------------------------------------
     def main_loop(self):
+
         if self.on_init() == False:
             self._running = False
 
@@ -272,6 +250,7 @@ class App:
     # GAME ----------------------------------------------------------------------------------------------------------
 
     def main_menu(self):
+
         self._display_surf.fill((255, 255, 255))
         self._display_surf.blit(self.mn_resized, [0, 0])
 
@@ -284,7 +263,7 @@ class App:
         self._display_surf.blit(play_text, [590, 800])
 
         rect = pygame.Rect(470, 775, 330, 90)
-        # pygame.draw.rect(self._display_surf, (0, 0, 255), rect, 1)
+
         while self.menu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -298,6 +277,7 @@ class App:
             self.clock.tick(60)
 
     def game_mode_switch(self):
+
         reading = True
         self._display_surf.fill((0, 0, 0))
         font = pygame.font.Font('data/assets/fonts/Coiny-Regular.ttf', 35)
@@ -315,9 +295,6 @@ class App:
         L_rect = text3.get_rect()
         L_rect.x = 450
         L_rect.y = 400
-
-        pygame.draw.rect(self._display_surf, (0, 0, 255), R_rect, 1)
-        pygame.draw.rect(self._display_surf, (0, 0, 255), L_rect, 1)
 
         while reading:
             for event in pygame.event.get():
@@ -337,6 +314,7 @@ class App:
             self.clock.tick(60)
 
     def tutorial_infinite(self):
+
         reading = True
         self._display_surf.fill((255, 255, 255))
 
@@ -358,7 +336,6 @@ class App:
         L_rect.x = 150
         L_rect.y = 1050
 
-
         while reading:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -379,6 +356,7 @@ class App:
             self.clock.tick(60)
 
     def tutorial_pollution(self):
+
         reading = True
         self._display_surf.fill((255, 255, 255))
 
@@ -421,28 +399,13 @@ class App:
 
     # GAME STATES -----------------------------------------------------------------------------------------------------
     def game_play(self):
+
         while self.PLAY_STATE:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.PLAY_STATE = False
                     self._running = False
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_w:
-                        self.BinColor = 'blu'
-                        self._bin.set_color(self.BinColor)
-                        self.BinTypeImage = self._bin.bin_blue_resized
-                    if event.key == pygame.K_a:
-                        self.BinColor = 'verde'
-                        self._bin.set_color(self.BinColor)
-                        self.BinTypeImage = self._bin.bin_green_resized
-                    if event.key == pygame.K_s:
-                        self.BinColor = 'grigio'
-                        self._bin.set_color(self.BinColor)
-                        self.BinTypeImage = self._bin.bin_gray_resized
-                    if event.key == pygame.K_d:
-                        self.BinColor = 'giallo'
-                        self._bin.set_color(self.BinColor)
-                        self.BinTypeImage = self._bin.bin_yellow_resized
                     if event.key == pygame.K_ESCAPE:
                         self.PAUSE_STATE = not self.PAUSE_STATE
                     if event.key == pygame.K_r:
@@ -457,6 +420,7 @@ class App:
                         self.menu = True
                         self.VITA = 3
                         self.POINT = 0
+                        self._t.resetAfterLifeLoss()
                         self.LOST_STATE = False
                         self.PLAY_STATE = False
 
@@ -475,10 +439,9 @@ class App:
                 self._display_surf.blit(self.point_text2, [970, 280])
                 self._display_surf.blit(self.life_text1, [970, 320])
 
-
-            self.on_loop()
-            self.on_render()
-            self.getScoreLife(self.POINT, self.VITA, self.POLLUTION)
+            self.playerBinLoop()
+            self.trashLoop()
+            self.getScoreLifePollution(self.POINT, self.VITA, self.POLLUTION)
 
             # UI -------------------------------------------------------------
             self._display_surf.blit(self.bg_w_keys, [950, 600])
@@ -493,6 +456,7 @@ class App:
             self.clock.tick(60)
 
     def game_replay(self):
+
         self.VITA = 3
         self.BEST_POINT = self.POINT
         self.POINT = 0
@@ -502,12 +466,10 @@ class App:
         self._t.initTrashList()
 
     def game_pause(self):
+
         self._display_surf.blit(self._ui.b_play_resized, [950, 900])
         self._display_surf.blit(self._ui.b_replay_resized, [1030, 900])
         self._display_surf.blit(self._ui.b_esc_resized, [1110, 900])
-
-        # pygame.draw.rect(self._display_surf, (255, 0, 0), self._ui.play_rect, 2)
-        # pygame.draw.rect(self._display_surf, (255, 0, 0), self._ui.replay_rect, 2)
 
         while self.PAUSE_STATE:
             for event in pygame.event.get():
@@ -539,6 +501,7 @@ class App:
             self.clock.tick(60)
 
     def game_win(self):
+
         # Immagine di Background
         bg_loss = pygame.image.load('data/assets/images/sfondo_win.png')
         bg_loss_resized = pygame.transform.scale(bg_loss, (1200, 1200))
@@ -581,6 +544,7 @@ class App:
             self.clock.tick(60)
 
     def game_over(self):
+
         # Immagine di Background
         bg_loss = pygame.image.load('data/assets/images/sfondo_lost.png')
         bg_loss_resized = pygame.transform.scale(bg_loss, (1200, 1200))
@@ -624,6 +588,7 @@ class App:
 
     # GAME MODE POLLUTION ---------------------------------------------------------------------------------------------
     def mode_pollution(self, gm):
+
         if gm == True:
             for i in range(self.TRASH):
                 if self.trash_list[i].get('y') >= 1200:
