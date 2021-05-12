@@ -1,6 +1,7 @@
 import pygame
 import random
 
+
 class Tube:
     def __init__(self):
         self._dimX = 300
@@ -28,6 +29,7 @@ class Tube:
         return self._height
 
     def randomTube(self):
+
         random.shuffle(self.tube)
         x = random.choice(self.tube)
         if 'tubo1' in x:

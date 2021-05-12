@@ -1,6 +1,7 @@
 import pygame
 
-class Ui():
+
+class Ui:
     def __init__(self):
         # Immagine di Bottone Play
         self.b_play = pygame.image.load('data/assets/images/play_button.png')
@@ -51,4 +52,3 @@ class Ui():
         # Immagine del Cuore pieno
         self.i_heart_e = pygame.image.load('data/assets/images/cuore vuoto.png')
         self.i_heart_e_resized = pygame.transform.scale(self.i_heart_e, (40, 40))
-

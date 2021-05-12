@@ -2,6 +2,7 @@ import pygame
 
 class Bin():
     def __init__(self):
+
         self._dimX = 400
         self._dimY = 950
         self._weight = 100
@@ -9,12 +10,12 @@ class Bin():
         self._velocity = 10
         self._orientation = True
 
+        self._color = 'blu'
 
         # BIDONI -----------------------------------------------------------------------
         # Immagine del bidone BLU
         self.bin_blue = pygame.image.load('data/assets/images/bidone blu.png')
         self.bin_blue_resized = pygame.transform.scale(self.bin_blue, (100, 100))
-        self._type = self.bin_blue_resized
         # Immagine del bidone VERDE
         self.bin_green = pygame.image.load('data/assets/images/bidone verde.png')
         self.bin_green_resized = pygame.transform.scale(self.bin_green, (100, 100))
@@ -25,11 +26,10 @@ class Bin():
         self.bin_yellow = pygame.image.load('data/assets/images/bidone giallo.png')
         self.bin_yellow_resized = pygame.transform.scale(self.bin_yellow, (100, 100))
 
-
+        self._type = self.bin_blue_resized
 
     def set_dimX(self, dimX):
         self._dimX = dimX
-        print(self._dimX)
         return  self._dimX
 
     def set_color(self, color):
@@ -59,7 +59,8 @@ class Bin():
         return self._type
 
     def bMov(self, KEY):
-        if KEY[pygame.K_LEFT] and self._dimX > self._weight + self._velocity:
+
+        if KEY[pygame.K_LEFT] and self._dimX > self._weight:
             self._dimX -= self._velocity
             self._orientation = True
             return self._orientation
@@ -67,4 +68,27 @@ class Bin():
             self._dimX += self._velocity
             self._orientation = False
             return self._orientation
+
+    def binChangeColor(self, KEY):
+
+         if KEY[pygame.K_w]:
+            self.BinColor = 'blu'
+            self.set_color(self.BinColor)
+            self.set_type(self.bin_blue_resized)
+            print(self._color)
+         if KEY[pygame.K_a]:
+            self.BinColor = 'verde'
+            self.set_color(self.BinColor)
+            self.set_type(self.bin_green_resized)
+            print(self._color)
+         if KEY[pygame.K_s]:
+            self.BinColor = 'grigio'
+            self.set_color(self.BinColor)
+            self.set_type(self.bin_gray_resized)
+            print(self._color)
+         if KEY[pygame.K_d]:
+            self.BinColor = 'giallo'
+            self.set_color(self.BinColor)
+            self.set_type(self.bin_yellow_resized)
+            print(self._color)
 

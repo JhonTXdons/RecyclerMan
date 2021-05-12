@@ -1,10 +1,9 @@
-import random
-
 from data.trash_tube import *
 
 
 class Trash:
     def __init__(self):
+
         self._dimX = 200
         self._dimY = 20
         self._weight = 50
@@ -109,6 +108,7 @@ class Trash:
         self.initTrashList()
 
     def initTrashList(self):
+
         for i in range(self.TRASH):
             state = {
                 'x': self._t_tube.randomTube(),
@@ -147,11 +147,13 @@ class Trash:
 
     # GESTIONE DELLA SCELTA DEL COLORE E DELL'IMMAGINE RELATIVA AL COLORE e DELLA VELOCITA' -----------------------------
     def randomColor(self):
+
         random.shuffle(self.color)
         x = random.choice(self.color)
         return x
 
     def randomImage(self):
+
         for i in range(len(self.trash_list)):
             if self.trash_list[i].get('color') == 'blu':
                 self.trash_list[i].update({'image': self.randomImageBlue()})
@@ -162,31 +164,37 @@ class Trash:
             elif self.trash_list[i].get('color') == 'giallo':
                 self.trash_list[i].update({'image': self.randomImageYellow()})
 
-    def randomVelocity(self):
-        vel = self.get_velocity() + random.randrange(25, 75, 5) / 100
-        return vel
-
     def randomImageGreen(self):
+
         random.shuffle(self.VETRO)
         x = random.choice(self.VETRO)
         return x
 
     def randomImageYellow(self):
+
         random.shuffle(self.CARTA)
         x = random.choice(self.CARTA)
         return x
 
     def randomImageBlue(self):
+
         random.shuffle(self.PLASTICA)
         x = random.choice(self.PLASTICA)
         return x
 
     def randomImageGray(self):
+
         random.shuffle(self.UMIDO)
         x = random.choice(self.UMIDO)
         return x
 
+    def randomVelocity(self):
+
+        vel = self.get_velocity() + random.randrange(25, 75, 5) / 100
+        return vel
+
     def chekBorder(self):
+
         for i in range(self.TRASH):
             if self.trash_list[i].get('y') >= 1200:
                 self.trash_list[i].update({'y': -1500 + random.randint(0, 1000)})
@@ -202,12 +210,32 @@ class Trash:
                         self.trash_list[i].update({'image': self.randomImageYellow()})
 
     def updatePosition(self):
+
         for i in range(self.TRASH):
             vel = self.trash_list[i].get('velocity')
             pos = self.trash_list[i].get('y')
             self.trash_list[i].update({'y': pos + vel})
 
     def speedUp(self):
+
         for i in range(self.TRASH):
             currentVelocity = self.trash_list[i].get('velocity')
             self.trash_list[i].update({'velocity': currentVelocity + 0.2})
+
+    # RESET DELLA Y DEGLI OGGETTI DOPO LA PERDITA DI UNA VITA ---------------------------------------------------------
+
+    def resetAfterLifeLoss(self):
+
+        for i in range(self.TRASH):
+            self.trash_list[i].update({'y': -1000 + random.randint(0, 1000)})
+            self.trash_list[i].update({'x': self._t_tube.randomTube()})
+            if self.trash_list[i].get('color') == 'blu':
+                self.trash_list[i].update({'image': self.randomImageBlue()})
+            elif self.trash_list[i].get('color') == 'grigio':
+                self.trash_list[i].update({'image': self.randomImageGray()})
+            elif self.trash_list[i].get('color') == 'verde':
+                self.trash_list[i].update({'image': self.randomImageGreen()})
+            elif self.trash_list[i].get('color') == 'giallo':
+                self.trash_list[i].update({'image': self.randomImageYellow()})
+
+    # -----------------------------------------------------------------------------------------------------------------
